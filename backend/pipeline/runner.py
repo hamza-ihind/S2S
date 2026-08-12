@@ -4,7 +4,7 @@ import traceback
 from typing import Dict, Any
 
 from pipeline.pdf_processor import convert_pdf_to_images
-from pipeline.omr_engine import run_omr_on_images
+from pipeline.omr_engine import run_omr_multi_engine
 from pipeline.musicxml_cleaner import process_and_clean_musicxml
 from pipeline.synth_engine import synthesize_midi_to_wav
 
@@ -27,36 +27,39 @@ def execute_pipeline(job: Dict[str, Any], pdf_path: str, output_base_dir: str):
         fail_stage = job.get("fail_stage")
 
         # STEP 1: PDF to Image conversion
-        time.sleep(0.5)
+        time.sleep(0.3)
         image_dir = os.path.join(job_dir, "images")
         image_paths = convert_pdf_to_images(pdf_path, image_dir, dpi=300)
         job["progress"] = 25
-        job["stage"] = f"Rendered {len(image_paths)} page(s). Running OMR (oemer)..."
+        job["stage"] = f"Rendered {len(image_paths)} page(s). Running OMR recognition (Audiveris / oemer)..."
 
         if fail_stage == "omr":
-            raise RuntimeError("OMR Engine (oemer) failed: staff lines could not be reliably detected in score scan.")
+            raise RuntimeError("OMR Engine failed: staff lines could not be reliably detected in score scan.")
 
-        # STEP 2: OMR Recognition
-        time.sleep(0.8)
-        raw_xml_path = os.path.join(job_dir, "raw_omr.musicxml")
-        run_omr_on_images(image_paths, raw_xml_path)
+        # STEP 2: Multi-Engine OMR Recognition (Audiveris -> oemer)
+        time.sleep(0.5)
+        omr_outputs = run_omr_multi_engine(pdf_path, image_paths, job_dir)
+
+        if not omr_outputs:
+            raise RuntimeError("OMR recognition failed to extract any MusicXML from input PDF.")
+
         job["progress"] = 60
         job["stage"] = "Cleaning MusicXML & converting to MIDI..."
 
         if fail_stage == "synthesis":
             raise RuntimeError("FluidSynth synthesis error: SoundFont render engine crashed on measure 14.")
 
-        # STEP 3: MusicXML cleanup and MIDI export
-        time.sleep(0.5)
+        # STEP 3: MusicXML cleanup and MIDI export via music21
+        time.sleep(0.3)
         clean_xml_path = os.path.join(job_dir, "output.musicxml")
         midi_path = os.path.join(job_dir, "output.mid")
-        score_metadata = process_and_clean_musicxml(raw_xml_path, clean_xml_path, midi_path)
+        score_metadata = process_and_clean_musicxml(omr_outputs, clean_xml_path, midi_path)
         
         job["progress"] = 85
         job["stage"] = "Synthesizing WAV audio via FluidSynth..."
 
         # STEP 4: MIDI to WAV Synthesis
-        time.sleep(0.5)
+        time.sleep(0.3)
         wav_path = os.path.join(job_dir, "output.wav")
         synthesize_midi_to_wav(midi_path, wav_path)
 
@@ -75,3 +78,4 @@ def execute_pipeline(job: Dict[str, Any], pdf_path: str, output_base_dir: str):
         job["status"] = "error"
         job["stage"] = "Pipeline Execution Error"
         job["error"] = str(e)
+
