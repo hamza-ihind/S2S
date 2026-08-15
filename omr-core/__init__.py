@@ -1,0 +1,1 @@
+# omr-core package initialization

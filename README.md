@@ -1,87 +1,32 @@
-# Sheet2Sound — PDF Sheet Music → Audio Converter
+# Custom End-to-End Optical Music Recognition (OMR) System
 
-Sheet2Sound is a full-stack web application that takes a PDF of piano sheet music, performs Optical Music Recognition (OMR), and outputs playable audio (WAV/MP3) and MIDI files.
-
----
-
-## 🏗️ Tech Stack
-
-- **Backend**: Python (FastAPI), PyMuPDF, `oemer` (OMR engine), `music21`, FluidSynth + SoundFont (MIDI synthesis).
-- **Frontend**: Next.js 14+ (App Router), TypeScript, Tailwind CSS, shadcn/ui components, Lucide icons.
-- **Containerization**: Docker & Docker Compose.
+A custom-trained, end-to-end Optical Music Recognition (OMR) pipeline built to convert scanned sheet music into MusicXML, MIDI, and playable audio without relying on black-box OMR wrappers.
 
 ---
 
-## ⚡ Pipeline Architecture
+## 🏗️ Project Layout
 
 ```
-PDF Upload (Next.js)
-   └─► POST /api/upload (FastAPI)
-        └─► POST /api/convert/{job_id}
-             ├─► PDF → Page Images (PyMuPDF)
-             ├─► OMR Parsing (oemer) → MusicXML
-             ├─► MusicXML Cleanup (music21: quantize, fix ties)
-             ├─► MusicXML → MIDI Conversion
-             └─► Synthesis (FluidSynth + GM SoundFont) → WAV/MP3 Audio
+S2S/
+├── omr-core/           # Custom OMR model architectures (CRNN/CTC seq2seq & YOLOv8 detector)
+├── backend/            # API service wrapping the OMR pipeline
+├── frontend/           # Web application (planned)
+├── data/               # Dataset loaders (PrIMuS, DeepScores, MUSCIMA++)
+│   ├── primus_loader.py       # PrIMuS dataset loader & vocabulary encoder
+│   ├── deepscores_loader.py   # DeepScores bounding box scaffolding
+│   ├── muscima_loader.py      # MUSCIMA++ node graph scaffolding
+│   └── demo_pipeline.py       # Data verification script
+├── notebooks/          # Jupyter experimentation notebooks
+│   └── 01_primus_data_pipeline.ipynb
+├── docs/               # Architectural evaluations & paper references
+│   └── omr_architecture_evaluation.md
+└── README.md
 ```
 
 ---
 
-## 🚀 Getting Started
+## 📖 Phase 1 — Foundations
 
-### Prerequisites
-
-- Node.js (v18+) & npm
-- Python 3.10+
-- FluidSynth (`apt-get install fluidsynth fluid-soundfont-gm` on Linux, or via Homebrew/Chocolatey)
-
-### Option 1: Running with Docker Compose
-
-```bash
-docker-compose up --build
-```
-- Frontend will be live at `http://localhost:3000`
-- Backend API docs live at `http://localhost:8000/docs`
-
-### Option 2: Running Locally
-
-#### 1. Backend Setup
-
-```bash
-cd backend
-python -m venv venv
-# On Windows:
-.\venv\Scripts\activate
-# On Linux/macOS:
-source venv/bin/activate
-
-pip install -r requirements.txt
-uvicorn main:app --reload --port 8000
-```
-
-#### 2. Frontend Setup
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
----
-
-## 📡 API Endpoints
-
-- `POST /api/upload`: Upload PDF file, receive `job_id`.
-- `POST /api/convert/{job_id}`: Start processing job (supports `simulate_error` flag for error testing).
-- `GET /api/status/{job_id}`: Poll job status (`queued`, `omr`, `synthesis`, `done`, `error`), stage message, and progress %.
-- `GET /api/result/{job_id}`: Fetch playable audio URL, MIDI download URL, MusicXML download URL, and score metadata.
-
----
-
-## ⚠️ Known Constraints & Notes
-
-- OMR accuracy works best on clean, digital single/double-staff piano scores.
-- Handwritten scores, complex dense orchestral layouts, or poor scans may reduce accuracy.
-- Conversion runs asynchronously; typical processing time ranges from 10s to 2 mins depending on score complexity.
+- **Architecture Evaluation**: Evaluates End-to-End Seq2Seq (Calvo-Zaragoza et al., PrIMuS CRNN/CTC) vs. Two-Stage Detection + Graph Reconstruction (YOLOv8 + DeepScores/MUSCIMA++). See [`docs/omr_architecture_evaluation.md`](file:///c:/Users/hamza/Desktop/S2S/docs/omr_architecture_evaluation.md).
+- **PrIMuS Loader**: Supports loading score images (`.png`), agnostic sequence annotations (`.agnostic`), and semantic sequence annotations (`.semantic`). See [`data/primus_loader.py`](file:///c:/Users/hamza/Desktop/S2S/data/primus_loader.py).
+- **Interactive Verification**: Try [`notebooks/01_primus_data_pipeline.ipynb`](file:///c:/Users/hamza/Desktop/S2S/notebooks/01_primus_data_pipeline.ipynb) to visualize score slices and token alignments.
