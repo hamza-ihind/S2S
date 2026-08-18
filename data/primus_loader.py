@@ -72,7 +72,7 @@ class PrIMuSDataset(Dataset):
         self._build_vocabulary()
 
     def _load_from_directory(self):
-        print(f"📂 Loading PrIMuS dataset from '{self.data_dir}' (annotation type: {self.annotation_type})...")
+        print(f"[DATASET] Loading PrIMuS dataset from '{self.data_dir}' (annotation type: {self.annotation_type})...")
         ext = ".agnostic" if self.annotation_type == "agnostic" else ".semantic"
         
         for root, _, files in os.walk(self.data_dir):
@@ -86,10 +86,10 @@ class PrIMuSDataset(Dataset):
                             tokens = f.read().strip().split("\t")
                         self.samples.append((img_path, tokens))
                         
-        print(f"✅ Loaded {len(self.samples)} PrIMuS samples from directory.")
+        print(f"[SUCCESS] Loaded {len(self.samples)} PrIMuS samples from directory.")
 
     def _generate_synthetic_samples(self, count):
-        print(f"ℹ️ Local dataset directory '{self.data_dir}' not found or empty. Generating {count} synthetic PrIMuS samples for Phase 1 verification...")
+        print(f"[INFO] Local dataset directory '{self.data_dir}' not found or empty. Generating {count} synthetic PrIMuS samples for Phase 1 verification...")
         
         # Synthetic PrIMuS agnostic and semantic vocabularies
         agnostic_templates = [
@@ -153,7 +153,7 @@ class PrIMuSDataset(Dataset):
         for _, tokens in self.samples:
             for t in tokens:
                 self.vocab.add_token(t)
-        print(f"📖 PrIMuS Vocabulary constructed: {len(self.vocab)} unique tokens.")
+        print(f"[VOCAB] PrIMuS Vocabulary constructed: {len(self.vocab)} unique tokens.")
 
     def __len__(self):
         return len(self.samples)

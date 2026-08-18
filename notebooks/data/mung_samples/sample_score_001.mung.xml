@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<score-notation-graph page="1">
+  <!-- Staff Line System Reference -->
+  <staff id="staff_1" top="100" bottom="180">
+    <staff-line y="100"/>
+    <staff-line y="120"/>
+    <staff-line y="140"/>
+    <staff-line y="160"/>
+    <staff-line y="180"/>
+  </staff>
+
+  <!-- Node 1: Treble Clef -->
+  <node id="1" class="g-clef" top="90" left="20" bottom="190" right="60">
+    <outlinks/>
+  </node>
+
+  <!-- Node 2: Accidental Sharp attached to Note 3 -->
+  <node id="2" class="accidental-sharp" top="112" left="100" bottom="128" right="112">
+    <outlinks>
+      <link target="3" type="accidental-of"/>
+    </outlinks>
+  </node>
+
+  <!-- Node 3: Quarter Notehead on F5 line (y_center=120) -->
+  <node id="3" class="notehead-full" top="114" left="120" bottom="126" right="134">
+    <outlinks>
+      <link target="4" type="has-stem"/>
+    </outlinks>
+  </node>
+
+  <!-- Node 4: Stem for Note 3 -->
+  <node id="4" class="stem" top="80" left="133" bottom="120" right="135">
+    <outlinks/>
+  </node>
+
+  <!-- Node 5: Eighth Notehead on C5 line (y_center=140) -->
+  <node id="5" class="notehead-full" top="134" left="180" bottom="146" right="194">
+    <outlinks>
+      <link target="6" type="has-stem"/>
+      <link target="7" type="has-beam"/>
+    </outlinks>
+  </node>
+
+  <!-- Node 6: Stem for Note 5 -->
+  <node id="6" class="stem" top="100" left="193" bottom="140" right="195">
+    <outlinks/>
+  </node>
+
+  <!-- Node 7: Beam for Note 5 -->
+  <node id="7" class="beam" top="98" left="193" bottom="104" right="240">
+    <outlinks/>
+  </node>
+
+  <!-- Node 8: Half Notehead on G4 line (y_center=160) -->
+  <node id="8" class="notehead-empty" top="154" left="250" bottom="166" right="266">
+    <outlinks>
+      <link target="9" type="has-stem"/>
+    </outlinks>
+  </node>
+
+  <!-- Node 9: Stem for Note 8 -->
+  <node id="9" class="stem" top="120" left="265" bottom="160" right="267">
+    <outlinks/>
+  </node>
+</score-notation-graph>
